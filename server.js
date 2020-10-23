@@ -1,43 +1,81 @@
 const express = require('express');
-// const app = express();
+const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
-let dbConfig = require('./database/db')
-// const PORT = 4000;
+const PORT = 4000;
 
-const beerRoute = require('../beerapp-backend/routes/beer.route')
+const Beer = require('./models/beer.js')
+const beer = express.Router();
 
-mongoose.Promise = global.Promise;
-mongoose.connect(dbConfig.db, {
-  useNewUrlParser: true
-}).then(()=>{
-  console.log('Database connected!');
-},
-  error => {
-    console.log('Could not connect to database ' + error);
-  }
-)
 
-const app = express();
 app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: true
-}))
-app.use('/beers', beerRoute)
+app.use('/beers', beer);
 
-const port = process.env.PORT || 4000;
-const server = app.listen(port, () => {
-  console.log('Connected to port ' + port);
+mongoose.connect('mongodb://127.0.0.1:27017/beerapp', { useNewUrlParser: true });
+const connection = mongoose.connection;
+
+connection.once('open', function() {
+    console.log("MongoDB database connection established successfully");
 })
 
-app.use((req, res, next)=>{
-  next(createError(404));
+//GET
+
+beer.get('/', (req,res)=>{
+  Beer.find({}, (err, foundBeer)=>{
+    res.json(foundBeer)
+  })
+})
+
+//find
+
+beer.get('/:id', (req, res)=>{
+  let id = req.params.id;
+  Beer.findById(id, function(err, foundBeer){
+    res.json(foundBeer);
+  })
+})
+
+//post
+beer.post('/add', (req, res)=>{
+  Beer.create(req.body, (err, createdBeer)=>{
+    Beer.find({}, (err, foundBeer)=>{
+      res.json(foundBeer)
+    })
+  })
+})
+
+//update
+beer.put('/:id', (req, res)=>{
+  Beer.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true },
+    (err, updatedBeer) => {
+      if (err) {
+        res.send(err)
+      }else{
+        Beer.find({}, (err, foundBeer)=>{
+          res.json(foundBeer)
+        })
+      }
+    }
+  )
+})
+
+//delete
+
+beer.delete('/:id', (req, res)=>{
+  Beer.findByIdAndRemove(req.params.id, (err, deletedBeer)=>{
+    Beer.find({}, (err, foundBeer)=>{
+      res.json(foundBeer)
+    })
+  })
+})
+
+
+
+app.listen(PORT, function() {
+    console.log("Server is running on Port: " + PORT);
 });
-
-app.use(function(err, req, res, next){
-  console.error(err, message);
-  if (!err.statusCode) err.statusCode = 500;
-  res.status(err.statusCode).send(err.message);
-})
