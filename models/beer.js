@@ -11,7 +11,7 @@ const beerSchema = new Schema({
   style: {
     type: String
   },
-  img: {
+  abv: {
     type: String
   }
 }, {
