@@ -8,6 +8,9 @@ require('dotenv').config()
 const Beer = require('./models/beer.js')
 const beer = express.Router();
 
+const PORT = process.env.PORT || 4000;
+
+const MONGODB_URI = process.env.MONGODB_URI;
 
 app.use(cors());
 app.use(bodyParser.json());
