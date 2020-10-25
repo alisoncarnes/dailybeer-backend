@@ -10,13 +10,20 @@ const beer = express.Router();
 
 const PORT = process.env.PORT || 4000;
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI
+mongoose.connect(MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+  useCreateIndex: true,
+})
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json())
+// app.use(bodyParser.json());
 app.use('/beers', beer);
 
-mongoose.connect('mongodb://127.0.0.1:27017/beerapp', { useNewUrlParser: true });
+// mongoose.connect('mongodb://127.0.0.1:27017/beerapp', { useNewUrlParser: true });
 const connection = mongoose.connection;
 
 connection.once('open', function() {
